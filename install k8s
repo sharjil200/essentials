@@ -13,6 +13,7 @@ sudo systemctl enable docker
 sudo systemctl start docker
 
 echo "Adding current user to docker group..."
+sudo usermod -aG docker ubuntu
 sudo usermod -aG docker $USER
 
 echo "Installing Kind..."
