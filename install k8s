@@ -80,3 +80,52 @@ nodes:
   - containerPort: 443
     hostPort: 443
     protocol: TCP
+
+------------------------------------------------------------------------------------
+
+##For minikube installation 
+
+#!/bin/bash
+
+set -e
+
+echo "Updating system packages..."
+sudo apt update -y
+
+echo "Installing dependencies..."
+sudo apt install -y curl apt-transport-https conntrack
+
+echo "Installing Docker (required for Minikube driver)..."
+sudo apt install -y docker.io
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -aG docker $USER
+
+echo "Downloading Minikube..."
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+echo "Installing Minikube..."
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+echo "Downloading kubectl..."
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+
+echo "Starting Minikube..."
+minikube start --driver=docker
+
+echo
+echo "======================================="
+echo "Minikube Installation Complete"
+echo "======================================="
+
+minikube version
+kubectl version --client
+
+echo
+echo "IMPORTANT:"
+echo "Run this if kubectl or docker permission fails:"
+echo "  newgrp docker"
+echo "Or logout and login again"
