@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -e
+
+echo "Updating packages..."
+sudo apt update -y
+
+echo "Installing Docker..."
+sudo apt install -y docker.io curl
+
+echo "Starting and enabling Docker..."
+sudo systemctl enable docker
+sudo systemctl start docker
+
+echo "Adding current user to docker group..."
+sudo usermod -aG docker $USER
+
+echo "Installing Kind..."
+
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then
+    curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
+elif [ "$ARCH" = "aarch64" ]; then
+    curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-arm64
+else
+    echo "Unsupported architecture: $ARCH"
+    exit 1
+fi
+
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
+
+echo "Installing latest kubectl..."
+
+VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt)
+URL="https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl"
+
+curl -LO "$URL"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+
+echo
+echo "======================================="
+echo "Installation Complete"
+echo "======================================="
+
+docker --version
+kind version
+kubectl version --client
+
+echo
+echo "Run the following command before using Docker without sudo:"
+echo "newgrp docker"
